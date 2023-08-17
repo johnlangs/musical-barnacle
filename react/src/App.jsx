@@ -7,6 +7,15 @@ function App(props) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch balance data
+  const getBalance = React.useCallback(async () => {
+    setLoading(true);
+    const response = await fetch("/api/balance", {});
+    const data = await response.json();
+    setData(data);
+    setLoading(false);
+  }, [setData, setLoading]);
+
   const onSuccess = useCallback(async (publicToken) => {
     setLoading(true);
     await fetch("/api/exchange_public_token", {
@@ -17,7 +26,7 @@ function App(props) {
       body: JSON.stringify({ public_token: publicToken }),
     });
     await getBalance();
-  }, []);
+  }, [getBalance]);
 
   // Creates a Link token
   const createLinkToken = React.useCallback(async () => {
@@ -32,15 +41,6 @@ function App(props) {
       localStorage.setItem("link_token", data.link_token);
     }
   }, [setToken]);
-
-  // Fetch balance data
-  const getBalance = React.useCallback(async () => {
-    setLoading(true);
-    const response = await fetch("/api/balance", {});
-    const data = await response.json();
-    setData(data);
-    setLoading(false);
-  }, [setData, setLoading]);
 
   let isOauth = false;
 
@@ -63,7 +63,7 @@ function App(props) {
     if (isOauth && ready) {
       open();
     }
-  }, [token, isOauth, ready, open]);
+  }, [token, isOauth, ready, open, createLinkToken]);
   
   return (
     <div>
