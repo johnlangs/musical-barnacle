@@ -8,7 +8,6 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const { MongoClient, ServerApiVersion } = require("mongodb")
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
-const { useInsertionEffect } = require("react");
 const app = express();
 
 // THE FOLLOWING MONGO DB CONNECTION CODE IS ADAPTED FROM https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/#std-label-node-connect-to-mongodb
