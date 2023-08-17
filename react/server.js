@@ -6,8 +6,39 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const { MongoClient, ServerApiVersion } = require("mongodb")
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const app = express();
+
+// THE FOLLOWING MONGO DB CONNECTION CODE IS ADAPTED FROM https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/#std-label-node-connect-to-mongodb
+
+// Stanalone uri - mongodb://mongodb0.example.com:27017
+// Standard Connection String Format - mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]
+const MongoDbUri = "mongodb://mongo:27017/?readPreference=primary&ssl=false&directConnection=true";
+
+const MongoDbClient = new MongoClient(MongoDbUri , {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+})
+
+async function run() {
+  try {
+    // Connect the client to the server (optional starting in v4.7)
+    await MongoDbClient.connect();
+    // Send a ping to confirm a successful connection
+    await MongoDbClient.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await MongoDbClient.close();
+  }
+}
+run().catch(console.dir);
+
+// END ADPATION CREDIT
 
 app.use(
   // FOR DEMO PURPOSES ONLY
@@ -66,5 +97,7 @@ app.get("/api/balance", async (req, res, next) => {
     Balance: balanceResponse.data,
   });
 });
+
+
 
 app.listen(process.env.PORT || 8080);
