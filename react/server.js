@@ -12,11 +12,7 @@ const app = express();
 
 // THE FOLLOWING MONGO DB CONNECTION CODE IS ADAPTED FROM https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/#std-label-node-connect-to-mongodb
 
-// Stanalone uri - mongodb://mongodb0.example.com:27017
-// Standard Connection String Format - mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]
-const MongoDbUri = "mongodb://mongo:27017/?readPreference=primary&ssl=false&directConnection=true";
-
-const MongoDbClient = new MongoClient(MongoDbUri , {
+const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
