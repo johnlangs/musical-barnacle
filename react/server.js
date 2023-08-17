@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const { MongoClient, ServerApiVersion } = require("mongodb")
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
+const { useInsertionEffect } = require("react");
 const app = express();
 
 // THE FOLLOWING MONGO DB CONNECTION CODE IS ADAPTED FROM https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/#std-label-node-connect-to-mongodb
@@ -33,6 +34,28 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+/**
+ * Insert a document  
+ * @param {MongoClient} client 
+ * @param {string} database
+ * @param {string} collection 
+ * @param {object} doc  
+ */
+async function insertDoc(client, database, collection, doc) {
+  try {
+    await MongoDbClient.connect();
+
+    const database = client.db("testDB");
+    const collection = database.collection("testCollection");
+
+    const result = await collection.insertOne(doc);
+
+    console.log(`A document was inserted with the _id: ${result.insertedId}`);
+  } finally {
+    await MongoDbClient.close();
+  }
+}
 
 // END ADPATION CREDIT
 
@@ -82,6 +105,14 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
   // FOR DEMO PURPOSES ONLY
   // Store access_token in DB instead of session storage
   req.session.access_token = exchangeResponse.data.access_token;
+
+  insertDoc(MongoDbClient, "testDB", "testCollection", {
+    title: "Test Token",
+    content: exchangeResponse.data.access_token,
+  }).catch(console.dir)
+
+  console.log(exchangeResponse.data.access_token)
+
   res.json(true);
 });
 
@@ -93,7 +124,5 @@ app.get("/api/balance", async (req, res, next) => {
     Balance: balanceResponse.data,
   });
 });
-
-
 
 app.listen(process.env.PORT || 8080);
