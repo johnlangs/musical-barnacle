@@ -45,10 +45,10 @@ async function insertDoc(client, database, collection, doc) {
   try {
     await MongoDbClient.connect();
 
-    const database = client.db("testDB");
-    const collection = database.collection("testCollection");
+    const db = client.db(database);
+    const coll = db.collection(collection);
 
-    const result = await collection.insertOne(doc);
+    const result = await coll.insertOne(doc);
 
     console.log(`A document was inserted with the _id: ${result.insertedId}`);
   } finally {
@@ -57,6 +57,29 @@ async function insertDoc(client, database, collection, doc) {
 }
 
 // END ADPATION CREDIT
+
+/**
+ * Insert a document  
+ * @param {MongoClient} client 
+ * @param {string} database
+ * @param {string} collection
+ */
+async function getMostRecentDoc(client, database, collection) {
+  try {
+    await MongoDbClient.connect();
+
+    const db = client.db(database);
+    const coll = db.collection(collection);
+
+    // Perhaps indexing would be best on larger collections
+    //const result = await coll.find().sort({ $natural: -1 }).limit(1).toArray();
+    const result = await coll.find().min("_id").hint("_id_").limit(1).toArray();
+
+    return result
+  } finally {
+    await MongoDbClient.close();
+  }
+}
 
 app.use(
   // FOR DEMO PURPOSES ONLY
@@ -117,8 +140,10 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
 
 // Fetches balance data using the Node client library for Plaid
 app.get("/api/balance", async (req, res, next) => {
-  const access_token = req.session.access_token;
-  const balanceResponse = await client.accountsBalanceGet({ access_token });
+
+  const doc = await getMostRecentDoc(MongoDbClient, "testDB", "testCollection").catch(console.dir);
+
+  const balanceResponse = await client.accountsBalanceGet({ access_token:  doc.at(0).content});
   res.json({
     Balance: balanceResponse.data,
   });
