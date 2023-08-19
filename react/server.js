@@ -8,9 +8,8 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const { MongoClient, ServerApiVersion } = require("mongodb")
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
+const { pingDB, insertDoc, updateAccountTransactionsDb, getHighestIndex } = require("./db_operations.js");
 const app = express();
-
-// THE FOLLOWING MONGO DB CONNECTION CODE IS ADAPTED FROM https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connect/#std-label-node-connect-to-mongodb
 
 const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
@@ -19,67 +18,7 @@ const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
     deprecationErrors: true,
   }
 })
-
-async function run() {
-  try {
-    // Connect the client to the server (optional starting in v4.7)
-    await MongoDbClient.connect();
-    // Send a ping to confirm a successful connection
-    await MongoDbClient.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await MongoDbClient.close();
-  }
-}
-run().catch(console.dir);
-
-/**
- * Insert a document  
- * @param {MongoClient} client 
- * @param {string} database
- * @param {string} collection 
- * @param {object} doc  
- */
-async function insertDoc(client, database, collection, doc) {
-  try {
-    await MongoDbClient.connect();
-
-    const db = client.db(database);
-    const coll = db.collection(collection);
-
-    const result = await coll.insertOne(doc);
-
-    console.log(`A document was inserted with the _id: ${result.insertedId}`);
-  } finally {
-    await MongoDbClient.close();
-  }
-}
-
-// END ADPATION CREDIT
-
-/**
- * Insert a document  
- * @param {MongoClient} client 
- * @param {string} database
- * @param {string} collection
- */
-async function getMostRecentDoc(client, database, collection) {
-  try {
-    await MongoDbClient.connect();
-
-    const db = client.db(database);
-    const coll = db.collection(collection);
-
-    // Perhaps indexing would be best on larger collections
-    //const result = await coll.find().sort({ $natural: -1 }).limit(1).toArray();
-    const result = await coll.find().min("_id").hint("_id_").limit(1).toArray();
-
-    return result
-  } finally {
-    await MongoDbClient.close();
-  }
-}
+pingDB(MongoDbClient).catch(console.dir);
 
 app.use(
   // FOR DEMO PURPOSES ONLY
@@ -103,24 +42,25 @@ const config = new Configuration({
 });
 
 //Instantiate the Plaid client with the configuration
-const client = new PlaidApi(config);
+const PlaidClient = new PlaidApi(config);
 
 //Creates a Link token and return it
 app.get("/api/create_link_token", async (req, res, next) => {
-  const tokenResponse = await client.linkTokenCreate({
+  const tokenResponse = await PlaidClient.linkTokenCreate({
     user: { client_user_id: req.sessionID },
     client_name: "Plaid's Tiny Quickstart",
     language: "en",
-    products: ["auth"],
+    products: ["auth", "transactions"],
     country_codes: ["US"],
     redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
+    webhook: "www.example.com",
   });
   res.json(tokenResponse.data);
 });
 
 // Exchanges the public token from Plaid Link for an access token
 app.post("/api/exchange_public_token", async (req, res, next) => {
-  const exchangeResponse = await client.itemPublicTokenExchange({
+  const exchangeResponse = await PlaidClient.itemPublicTokenExchange({
     public_token: req.body.public_token,
   });
 
@@ -128,25 +68,44 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
   // Store access_token in DB instead of session storage
   req.session.access_token = exchangeResponse.data.access_token;
 
-  insertDoc(MongoDbClient, "testDB", "testCollection", {
+  await insertDoc(MongoDbClient, process.env.MONGO_DB_NAME, process.env.MONGO_COLL_NAME, {
     title: "Test Token",
     content: exchangeResponse.data.access_token,
-  }).catch(console.dir)
+  }).catch(console.dir);
 
-  console.log(exchangeResponse.data.access_token)
+  console.log(exchangeResponse.data.access_token);
 
   res.json(true);
 });
 
 // Fetches balance data using the Node client library for Plaid
 app.get("/api/balance", async (req, res, next) => {
+  const doc = await getHighestIndex(MongoDbClient, process.env.MONGO_DB_NAME, process.env.MONGO_COLL_NAME).catch(console.dir);
+  const balanceResponse = await PlaidClient.accountsBalanceGet({ access_token:  doc.at(0).content});
 
-  const doc = await getMostRecentDoc(MongoDbClient, "testDB", "testCollection").catch(console.dir);
-
-  const balanceResponse = await client.accountsBalanceGet({ access_token:  doc.at(0).content});
   res.json({
     Balance: balanceResponse.data,
   });
 });
+
+app.get("/api/transactionsSync", async (req, res, next) => {
+  const doc = await getHighestIndex(MongoDbClient, process.env.MONGO_DB_NAME, process.env.MONGO_COLL_NAME).catch(console.dir);
+  const transactionResponse = await PlaidClient.transactionsSync({
+    access_token: doc.at(0).content,
+  });
+
+  updateAccountTransactionsDb(
+    MongoDbClient, 
+    "user", 
+    "transactions", 
+    transactionResponse.data.added,
+    transactionResponse.data.modified,
+    transactionResponse.data.removed
+    ).catch(console.dir);
+
+  res.json({
+    TransactionStream: transactionResponse.data,
+  });
+})
 
 app.listen(process.env.PORT || 8080);
