@@ -1,3 +1,42 @@
 {
-    
+    "number_of_transactions": 5,
+    "transactions":
+    [
+        {
+            "amount": 250,
+            "date": "2023-08-20",
+            "category": "Electronics",
+            "account": "Chase Checking",
+            "merchant_name": "Lenovo"
+        },
+        {
+            "amount": 50,
+            "date": "2023-08-20",
+            "category": "Taxi",
+            "account": "Chase Checking",
+            "merchant_name": "Uber"
+        },
+        {
+            "amount": 150,
+            "date": "2023-08-18",
+            "category": "Groceries",
+            "account": "Chase Checking",
+            "merchant_name": "HEB"
+        },
+        {
+            "amount": 100,
+            "date": "2023-08-15",
+            "category": "Uilties",
+            "account": "Chase Checking",
+            "merchant_name": "ATMOS Energy"
+        },
+        {
+            "amount": 150,
+            "date": "2023-08-13",
+            "category": "Debt Payment",
+            "account": "Chase Checking",
+            "merchant_name": "Plaid Loan"
+        }
+    ],
+    "generated_at": "2023-08-21"
 }

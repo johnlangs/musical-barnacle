@@ -1,0 +1,11 @@
+{
+    "number_of_accounts": 4,
+    "accounts_names_list":
+    [
+        "Chase Checking",
+        "Chase Savings",
+        "Plaid CD",
+        "Plaid Loan"
+    ],
+    "generated_at": "2023-0-21"
+}
