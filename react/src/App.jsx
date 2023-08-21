@@ -10,7 +10,7 @@ function App(props) {
   // Fetch balance data
   const getBalance = React.useCallback(async () => {
     setLoading(true);
-    const response = await fetch("/api/balance/10", {});
+    const response = await fetch("/api/balanceOverview", {});
     const data = await response.json();
     setData(data);
     setLoading(false);

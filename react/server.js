@@ -107,4 +107,23 @@ app.get("/api/transactions/:n", async (req, res, next) => {
   });
 }) 
 
+app.get("/api/balanceOverview", async (req, res, next) => {
+  let totalBalance = 0;
+  let accounts = [];
+
+  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
+
+  for (const document of balanceDocuments) {
+    for (const account of document.accounts) {
+      totalBalance += Number(account.balances.current);
+      accounts.push([account.name, account.balances.current]);
+    }
+  }
+
+  res.json({
+    totalBalance: totalBalance,
+    accounts: accounts,
+  })
+})
+
 app.listen(process.env.PORT || 8080);
