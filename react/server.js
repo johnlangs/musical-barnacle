@@ -9,6 +9,13 @@ const session = require("express-session");
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const app = express();
 
+const fs = require('fs');
+const account_balances = JSON.parse(fs.readFileSync("./dummy-json/account_balances.json"));
+const accounts_list = JSON.parse(fs.readFileSync("./dummy-json/accounts_list.json"));
+const category_spending = JSON.parse(fs.readFileSync("./dummy-json/category_spending.json"));
+const total_balance = JSON.parse(fs.readFileSync("./dummy-json/total_balance.json"));
+const transactions = JSON.parse(fs.readFileSync("./dummy-json/transactions.json"));
+
 app.use(
   // FOR DEMO PURPOSES ONLY
   // Use an actual secret key in production
@@ -58,13 +65,24 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
   res.json(true);
 });
 
-// Fetches balance data using the Node client library for Plaid
-app.get("/api/balance", async (req, res, next) => {
-  const access_token = req.session.access_token;
-  const balanceResponse = await client.accountsBalanceGet({ access_token });
-  res.json({
-    Balance: balanceResponse.data,
-  });
+app.get("/api/accountBalances", (req, res, next) => {
+  res.json(account_balances);
+})
+
+app.get("/api/accountsList", async (req, res, next) => {
+  res.json(accounts_list);
+});
+
+app.get("/api/categorySpending", async (req, res, next) => {
+  res.json(category_spending);
+});
+
+app.get("/api/totalBalance", async (req, res, next) => {
+  res.json(total_balance);
+});
+
+app.get("/api/transactions", async (req, res, next) => {
+  res.json(transactions);
 });
 
 app.listen(process.env.PORT || 8080);
