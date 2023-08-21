@@ -1,24 +1,30 @@
+/**
+ * @file Assumes an valid mongodb client with direct connection
+ */
+
+const { MongoClient, FindCursor } = require("mongodb");
 
 /**
- * 
- * @param {MongoClient} client 
+ * Ping a given database through a given client
+ * @param {import("mongodb").MongoClient} client 
+ * @param {string} database
  */
-async function pingDB(client) 
+async function pingDB(client, database) 
 {
-    try 
-    {
-      await client.connect();
-      await client.db("admin").command({ ping: 1 });
-      console.log(`Successful Ping at ${process.env.MONGODB_URI}`);
-    } 
-    finally 
-    {
-      await client.close();
-    }
+  try 
+  {
+    await client.connect();
+    await client.db(database).command({ ping: 1 });
+    console.log(`Successful Ping at ${process.env.MONGODB_URI}`);
+  } 
+  finally 
+  {
+    await client.close();
+  }
 }
 
 /**
- * Insert a document  
+ * Insert a document given a client object, and database and collection string name
  * @param {import("mongodb").MongoClient} client 
  * @param {string} database
  * @param {string} collection 
@@ -39,42 +45,49 @@ async function insertDoc(client, database, collection, doc)
 }
 
 /**
- * Insert a document  
- * @param {MongoClient} client 
- * @param {string} database
+ * Get a specific number of documents from a collection, in index order
+ * @param {import("mongodb").MongoClient} client 
+ * @param {string} database 
  * @param {string} collection
+ * @param {number} n 
+ * @param {boolean} [oldest_first=false] 
+ * @returns {Array<import("plaid").Transaction>}
  */
-async function getHighestIndex(client, database, collection) 
+async function getDocuments(client, database, collection, n, oldest_first=false)
 {
-  try 
+  let docs = [];
+  try
   {
     await client.connect();
+    const coll = client.db(database).collection(collection);
 
-    const db = client.db(database);
-    const coll = db.collection(collection);
-
-    // Perhaps indexing would be best on larger collections
-    const result = await coll.find().sort({ $natural: -1 }).limit(1).toArray();
-    //const result = await coll.find().min("_id").hint("_id_").limit(1).toArray();
-
-    return result
-  } 
-  finally 
+    docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
+  }
+  finally
   {
     await client.close();
+    return docs;
   }
 }
 
 /**
+ * Update balance collection
+ */
+async function updateBalanceDb(client, database, collection, balance, insert=true)
+{
+  
+}
+
+/**
  * Update a transaction collection given arrays of added, modified, and removed transactions
- * @param {MongoClient} client 
+ * @param {import("mongodb").MongoClient} client 
  * @param {string} database
  * @param {string} collection 
  * @param {Array<import("plaid").Transaction>} added  
  * @param {Array<import("plaid").Transaction>} modified 
  * @param {Array<import("plaid").Transaction>} deleted 
  */
-async function updateAccountTransactionsDb(client, database, collection, added, modified, removed)
+async function updateTransactionsDb(client, database, collection, added, modified, removed)
 {
   try
   {
@@ -118,7 +131,7 @@ async function addTransactions(coll, added)
 }
 
 /**
- * Modify transaction in a collection
+ * Modify transactions in a collection
  * @param {Collection<Document>} coll
  * @param {Array<import("plaid").Transaction>} modified
  */
@@ -136,7 +149,7 @@ async function modifyTransactions(coll, modified)
 }
 
 /**
- * Remove transaction from a collection
+ * Remove transactions from a collection
  * @param {Collection<Document>} coll
  * @param {Array<import("plaid").Transaction>} removed
  */
@@ -153,4 +166,4 @@ async function removeTransactions(coll, removed)
   }
 }
 
-module.exports = {pingDB, insertDoc, getHighestIndex, updateAccountTransactionsDb};
+module.exports = {pingDB, insertDoc, updateTransactionsDb, getDocuments};
