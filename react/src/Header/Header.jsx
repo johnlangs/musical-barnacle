@@ -1,13 +1,20 @@
-import React from "react";
+import "./Header.css"
 import "../Context/Context";
 
 // contains the sum of all accounts, banks info is pulled from with info button, and selector
 function Header(props) {
 
   // gets the total of all credits and debts
-  function getAccountSum() {
-    let totalBalance = 0;
-    return totalBalance;
+  function getAccountSumString() {
+    
+    //TODO: tmp solution
+    let totalBalance = 88888888
+
+    // formats commas to match local string
+    totalBalance = totalBalance.toLocaleString()
+    
+    // auto formats to "$ -value" if negitive
+    return "$ " + totalBalance;
   }
 
   // gets the string of banks, displayed under total sum
@@ -18,7 +25,9 @@ function Header(props) {
 
   // returns rendered Header
   return (
-    <p>{getAccountSum()}</p>
+    <div id="background">
+      <p id="accountSum"> {getAccountSumString()} </p>
+    </div>
   )
 }
 
