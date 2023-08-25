@@ -1,8 +1,14 @@
-import Header from "./Header/Header"
+import Header from "./Header/Header";
+import "./MyApp.css"
+
 
 function MyApp(props) {
   return(
-    <Header></Header>
+    <div>
+      <Header></Header>
+      <div class = "Padding">
+      </div>
+    </div>
   )
 }
 
