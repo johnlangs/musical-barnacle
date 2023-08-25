@@ -1,4 +1,4 @@
-import "./Header.css"
+import "./HeaderStyle.css"
 import "../Context/Context";
 
 // contains the sum of all accounts, banks info is pulled from with info button, and selector
@@ -31,5 +31,4 @@ function Header(props) {
   )
 }
 
-// export single function from script
 export default Header;

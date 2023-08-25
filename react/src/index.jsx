@@ -1,11 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Header from "./Header/Header.jsx"
 import "./index.css"
+import MyApp from "./myApp";
+import '@radix-ui/themes/styles.css';
+
 
 ReactDOM.render(
   <React.StrictMode>
-    <Header></Header>
+    <MyApp></MyApp>
   </React.StrictMode>,
   document.getElementById("root")
 );
