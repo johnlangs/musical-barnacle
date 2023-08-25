@@ -126,4 +126,31 @@ app.get("/api/balanceOverview", async (req, res, next) => {
   })
 })
 
+app.get("/api/totalBalance", async (req, res, next) => {
+  let totalBalance = 0;
+  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
+
+  for (const balance of balanceDocuments)
+    totalBalance += balance.balance;
+
+  res.json({
+    total_balance: totalBalance,
+    genereated_at: ""
+  })
+})
+
+app.get("/api/accountBalances", async (req, res, next) => {
+  let balances = [];
+  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
+  
+  for (const account of balanceDocuments)
+    balances.push([account.name, account.balance]);
+
+  res.json({
+    number_of_balances: balances.length,
+    balances: balances,
+    generated_at: ""
+  })
+})
+
 app.listen(process.env.PORT || 8080);
