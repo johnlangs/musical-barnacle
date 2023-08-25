@@ -1,12 +1,27 @@
 /* CSS needed for Header.jsx */
 
-#background {
-  background-color: #F2A1FF;
+/* Used to contain header, provides background color*/
+.HeaderContainer {
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 60px;
+  background-color: #F2A1FF
 }
 
+/* large number*/
 #accountSum {
-  margin: 0;
-  font-size: 15vw;
+  margin:inherit;
+  font-size: 2.8125rem;
+  font-size: clamp(2.7rem, 1.6rem + 5.483870967741936vw, 6rem);
   font-weight: 800;
+}
+
+/* list of banks the user has connected */
+#bankList {
+  margin:inherit;
+  font-size:calc(10px + .75vw); /*min width of 10px*/
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 

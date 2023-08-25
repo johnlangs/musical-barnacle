@@ -19,15 +19,25 @@ function Header(props) {
 
   // gets the string of banks, displayed under total sum
   function getBankNameString() {
-    let finalString = "tmp";
+    
+    // TODO: tmp solution
+    let bankList = "JPMorgan Chase Bank, Bank of America, Wells Fargo Bank, Citibank, Goldman Sachs, Morgan Stanley, U.S. Bank, PNC Bank, TD Bank, Capital One, HSBC Bank, Santander Bank, BB&T (now part of Truist), SunTrust (now part of Truist), Regions Bank, Fifth Third Bank, Ally Bank, KeyBank, BMO Harris Bank, Citizens Bank, Comerica Bank, Union Bank, M&T Bank, Huntington Bank, Discover Bank, Charles Schwab Bank, TIAA Bank, First Republic Bank, Santander Bank, Synovus Bank, Frost Bank"
+
+
+    let finalString = bankList;
     return finalString;
   }
 
   // returns rendered Header
   return (
-    <div id="background">
-      <p id="accountSum"> {getAccountSumString()} </p>
-    </div>
+    <section class = "HeaderContainer">
+        <p id="accountSum"> {getAccountSumString()} </p>
+        
+        <p id="bankList"> 
+          <b> Accounts Connected: </b>
+          {getBankNameString()} 
+        </p>
+    </section>
   )
 }
 
