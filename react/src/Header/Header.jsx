@@ -56,6 +56,9 @@ function Header(props) {
       {!loading && accounts != null &&
         (<p id="bankList"> <b> Accounts Connected: </b> {accounts} </p>)
       }
+
+      <>
+      </>
     </section>
   )
 }
