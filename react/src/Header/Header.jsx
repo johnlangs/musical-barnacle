@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import "./HeaderStyle.css"
 import "../Context/Context";
 
@@ -11,12 +11,15 @@ function Header(props) {
   // gets the total of all credits and debts
   const getAccountSum = React.useCallback(async () => {
     setLoading(true);
+
     const response = await fetch("/api/totalBalance", {});
     const data = await response.json();
     console.log(data);
+
     let balance = data.amount;
     balance = "$ " + balance.toLocaleString();
     setBalance(balance);
+
     setLoading(false);
   }, [setBalance, setLoading]);
 
@@ -24,11 +27,14 @@ function Header(props) {
   // gets the string of banks, displayed under total sum
   const getBankNameString = React.useCallback(async () => {
     setLoading(true);
+
     const response = await fetch("/api/accountsList");
     const data = await response.json();
     console.log(data);
+
     const accounts = data.accounts_names_list.join(", ");
     setAccounts(accounts);
+
     setLoading(false);
   }, [setAccounts, setLoading]);
 
@@ -39,7 +45,7 @@ function Header(props) {
     if (accounts == null) {
       getBankNameString();
     }
-  }, [accounts, balance, getAccountSum, getBankNameString, setLoading])
+  }, [accounts, balance, getAccountSum, getBankNameString, setLoading]);
 
   // returns rendered Header
   return (
