@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Button, Card, DropdownMenu, DropdownMenuTrigger } from "@radix-ui/themes";
 import "./HeaderStyle.css"
 import "../Context/Context";
 
@@ -57,8 +58,26 @@ function Header(props) {
         (<p id="bankList"> <b> Accounts Connected: </b> {accounts} </p>)
       }
 
-      <>
-      </>
+      <Card id = "cardSelector">
+        <p> 
+          Show 
+          <DropdownMenu.Root>
+            <DropdownMenuTrigger>
+              <Button variant="soft">
+                all data
+              </Button>
+            </DropdownMenuTrigger>
+          </DropdownMenu.Root>
+          From
+          <DropdownMenu.Root>
+            <DropdownMenuTrigger>
+              <Button variant="soft">
+                <p> before 2023 </p>
+              </Button>
+            </DropdownMenuTrigger>
+          </DropdownMenu.Root>
+        </p>
+      </Card>
     </section>
   )
 }
