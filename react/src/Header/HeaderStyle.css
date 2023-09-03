@@ -36,11 +36,11 @@
   }
 }
 
-.dialogText {
+.dialogButton {
   margin:inherit;
 }
 
-.dialogText p {
+.dialogButton p {
   font-size: 1.25rem;
   margin: calc(5px + .25vw);
 }

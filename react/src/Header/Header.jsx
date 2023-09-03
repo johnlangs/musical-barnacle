@@ -61,14 +61,14 @@ function Header(props) {
       <Card id = "cardSelector">
           <DropdownMenu.Root>
             <DropdownMenuTrigger>
-              <Button class="dialogText">
+              <Button class="dialogButton">
                 <p>Filter</p>
               </Button>
             </DropdownMenuTrigger>
           </DropdownMenu.Root>
           <DropdownMenu.Root>
             <DropdownMenuTrigger>
-              <Button class="dialogText">
+              <Button class="dialogButton">
                 <p> sort </p>
               </Button>
             </DropdownMenuTrigger>
