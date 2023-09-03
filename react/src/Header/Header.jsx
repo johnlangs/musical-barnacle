@@ -22,7 +22,7 @@ function Header(props) {
     setBalance(balance);
 
     setLoading(false);
-  }, [setBalance, setLoading]);
+  }, [setBalance]);
 
 
   // gets the string of banks, displayed under total sum
@@ -59,24 +59,20 @@ function Header(props) {
       }
 
       <Card id = "cardSelector">
-        <p> 
-          Show 
           <DropdownMenu.Root>
             <DropdownMenuTrigger>
-              <Button variant="soft">
-                all data
+              <Button class="dialogText">
+                <p>Filter</p>
               </Button>
             </DropdownMenuTrigger>
           </DropdownMenu.Root>
-          From
           <DropdownMenu.Root>
             <DropdownMenuTrigger>
-              <Button variant="soft">
-                <p> before 2023 </p>
+              <Button class="dialogText">
+                <p> sort </p>
               </Button>
             </DropdownMenuTrigger>
           </DropdownMenu.Root>
-        </p>
       </Card>
     </section>
   )

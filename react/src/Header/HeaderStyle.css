@@ -5,7 +5,8 @@
   padding-left: 15px;
   padding-right: 15px;
   padding-bottom: 60px;
-  background-color: #F2A1FF
+  background-color: #F2A1FF;
+  font-family: Inter;
 }
 
 /* large number*/
@@ -13,7 +14,7 @@
   margin:inherit;
   font-size: 2.8125rem;
   font-size: clamp(2.7rem, 1.6rem + 5.4vw, 6rem);
-  font-weight: 800;
+  font-weight:900;
 }
 @media screen and (min-width: 1000px) {
   #accountSum {
@@ -35,8 +36,21 @@
   }
 }
 
+.dialogText {
+  margin:inherit;
+}
+
+.dialogText p {
+  font-size: 1.25rem;
+  margin: calc(5px + .25vw);
+}
+
 /*Card that shows the user their options*/
 #cardSelector {
-  
+  pad: 10px;
+  text-align: center;
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 400;
 }
 
