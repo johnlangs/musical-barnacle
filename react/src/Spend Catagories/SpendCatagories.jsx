@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { PieChart, Pie, Sector, Cell, ResponsiveContainer} from "recharts";
-import { Flex, Card, Table, TableBody, TableRow, TableCell, Grid, Box } from "@radix-ui/themes";
+import { Flex, Card, Table, TableBody, TableRow, TableCell, Grid, Box, Avatar } from "@radix-ui/themes";
 
 function SpendCategories(props) {
   const [loading, setLoading] = useState(true);
@@ -16,30 +16,35 @@ function SpendCategories(props) {
     setLoading(false);
   }, []);
 
+  const getColorSwab = (hex) => {
+    return(
+      <Avatar style={{backgroundColor: hex}}>
+      </Avatar>
+    )
+  }
+
   useEffect(() => {
     getSpending();
   },[])
 
   const data = [
-    { name: 'Group A', value: 400, hex: '#'},
-    { name: 'Group B', value: 300, hex: '#'},
-    { name: 'Group C', value: 300, hex: '#'},
-    { name: 'Group D', value: 200, hex: '#'},
-    { name: 'Group E', value: 200, hex: '#'},
-    { name: 'Group F', value: 200, hex: '#'},
-    { name: 'Group G', value: 200, hex: '#'},
-    { name: 'Group H', value: 200, hex: '#'},
-    { name: 'Group I', value: 200, hex: '#'},
-    { name: 'Group J', value: 200, hex: '#'},
-    { name: 'Group K', value: 200, hex: '#'},
-    { name: 'Group L', value: 200, hex: '#'},
-    { name: 'Group M', value: 200, hex: '#'},
-    { name: 'Group N', value: 200, hex: '#'},
-    { name: 'Group O', value: 200, hex: '#'},
-    { name: 'Group P', value: 200, hex: '#'},
+    { name: 'Group A', value: 400, hex: '#9c27b0'},
+    { name: 'Group B', value: 300, hex: '#2196f3'},
+    { name: 'Group C', value: 300, hex: '#009688'},
+    { name: 'Group D', value: 200, hex: '#cddc39'},
+    { name: 'Group E', value: 200, hex: '#ff9800'},
+    { name: 'Group F', value: 200, hex: '#e81e63'},
+    { name: 'Group G', value: 200, hex: '#3f51b5'},
+    { name: 'Group H', value: 200, hex: '#00bcd4'},
+    { name: 'Group I', value: 200, hex: '#8bc34a'},
+    { name: 'Group J', value: 200, hex: '#ffc107'},
+    { name: 'Group K', value: 200, hex: '#f44336'},
+    { name: 'Group L', value: 200, hex: '#673ab7'},
+    { name: 'Group M', value: 200, hex: '#03a9f4'},
+    { name: 'Group N', value: 200, hex: '#4caf50'},
+    { name: 'Group O', value: 200, hex: '#ffeb3b'},
+    { name: 'Group P', value: 500, hex: '#ff5722'},
   ];
-
-  const COLORS = ['#C087E8', '#B694FF', '#E887CF', '#FF94AE'];
 
   const onMouseEnterHandleSegment = () => {
 
@@ -47,6 +52,7 @@ function SpendCategories(props) {
 
   return (
     <Card style={{ height:""}}>
+        <p class = "cardTitle">Spending By Category</p>
         <Grid columns={{initial: '1', md:'2'}} gap="3" width="100%">
           <Box height="100%">
             <ResponsiveContainer width="100%" height="100%" minHeight="350px" minWidth="350px" style={{margin: "0px"}}>
@@ -63,7 +69,7 @@ function SpendCategories(props) {
                     dataKey="value"
                   >
                     {data.map((entry, index) => (
-                      <Cell key={`cell-{index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell key={`cell-{index}`} fill={data[index % data.length].hex} />
                     ))}
                   </Pie>
             </PieChart> 
@@ -85,7 +91,7 @@ function SpendCategories(props) {
                 !loading && data != null 
                 ? data.map((data) => 
                 <TableRow>
-                  {<TableCell>{}</TableCell>}
+                  {<TableCell>{getColorSwab(data.hex)}</TableCell>}
                   {<TableCell>{data.name}</TableCell>}
                   {<TableCell>{data.value}</TableCell>}
                   </TableRow>
