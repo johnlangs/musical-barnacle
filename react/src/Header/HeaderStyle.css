@@ -47,10 +47,15 @@
 
 /*Card that shows the user their options*/
 #cardSelector {
+  margin-top: calc(10px + .5vw);
   pad: 10px;
   text-align: center;
   font-size: 17px;
   font-style: normal;
   font-weight: 400;
+  border-radius: 10px;
+}
+#cardSelector p {
+  color:  black;
 }
 

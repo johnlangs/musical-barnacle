@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import { Button, Card, DropdownMenu, DropdownMenuTrigger } from "@radix-ui/themes";
 import "./HeaderStyle.css"
 import "../Context/Context";
 
 // contains the sum of all accounts, banks info is pulled from with info button, and selector
 function Header(props) {
-  const [balance, setBalance] = useState(null);
+  const [balance, setBalance] = useState();
   const [accounts, setAccounts] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,20 +24,18 @@ function Header(props) {
     setLoading(false);
   }, [setBalance]);
 
-
   // gets the string of banks, displayed under total sum
   const getBankNameString = React.useCallback(async () => {
     setLoading(true);
-
-    const response = await fetch("/api/accountsList");
+    
+    const response = await fetch("/api/accountsList", {});
     const data = await response.json();
     console.log(data);
 
-    const accounts = data.accounts_names_list.join(", ");
-    setAccounts(accounts);
+    setAccounts(data.accounts.map((item) => item.name).join(", "));
 
     setLoading(false);
-  }, [setAccounts, setLoading]);
+  }, [setAccounts]);
 
   useEffect(() => {
     if (balance == null) {
@@ -46,18 +44,26 @@ function Header(props) {
     if (accounts == null) {
       getBankNameString();
     }
-  }, [accounts, balance, getAccountSum, getBankNameString, setLoading]);
+  }, [accounts, balance, getAccountSum, getBankNameString]); 
 
   // returns rendered Header
   return (
     <section class = "HeaderContainer">
-      {!loading && balance != null &&
-        (<p id="accountSum"> {balance} </p>)
-      }
-      {!loading && accounts != null &&
-        (<p id="bankList"> <b> Accounts Connected: </b> {accounts} </p>)
-      }
-
+      <p id="accountSum">
+        {!loading && balance != null 
+          ?  balance
+          :  "$ Loading . . ."
+        }
+      </p>
+      <p id="bankList"> 
+        <b> Accounts Connected: </b>
+          { //TODO: check that the style is correct with this
+            !loading && accounts != null 
+            ? accounts
+            : "Loading . . ."
+          }
+      </p>
+      
       <Card id = "cardSelector">
           <DropdownMenu.Root>
             <DropdownMenuTrigger>
