@@ -28,11 +28,11 @@ function TransactionsTable(props) {
   //TODO: remove tmp
 
   return (
-    <Card>
+    <Card style={{marginTop:"15px"}}>
       {
         console.log(transactions)
       }
-      <>Transactions</>
+      <p class="Card">Transactions</p>
       <Table.Root>
         <Table.Header>
           <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
@@ -52,9 +52,6 @@ function TransactionsTable(props) {
             : "Loading . . ."
           }
         </TableBody>
-        <Table.Row>
-
-        </Table.Row>
       </Table.Root>
     </Card>
   )
