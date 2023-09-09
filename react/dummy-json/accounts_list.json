@@ -1,11 +1,25 @@
-{
-    "number_of_accounts": 4,
-    "accounts_names_list":
+{   "accounts" :
     [
-        "Chase Checking",
-        "Chase Savings",
-        "Plaid CD",
-        "Plaid Loan"
-    ],
-    "generated_at": "2023-0-21"
+      {
+          "name": "Chase Checking",
+          "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv"
+      },
+      {
+          "name": "Chase Savings",
+          "account_id": "gaewvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv"
+      },
+      {
+          "name": "Plaid CD",
+          "account_id": "kyurK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv"
+      },
+      {
+          "name": "Plaid Loan",
+          "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv"
+      },
+      {
+          "name": "Another Account",
+          "account_id": "AnotherAccountId"
+      }
+  ],
+  "generated_at": "2023-01-21"
 }
