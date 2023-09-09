@@ -8,7 +8,7 @@ function MyApp(props) {
   return(
     <div>
       <Header></Header>
-      <div class = "Padding">
+      <div class = "global">
         <SpendCatagories></SpendCatagories>
         <TransactionsTable></TransactionsTable>
       </div>
