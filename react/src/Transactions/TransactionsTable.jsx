@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card,Table, TableBody, TableCell} from "@radix-ui/themes"
+import { Card,Table, TableBody, TableCell, TableRow, TableRowHeaderCell} from "@radix-ui/themes"
 
 
 function TransactionsTable(props) {
@@ -9,7 +9,7 @@ function TransactionsTable(props) {
     amount: 0,
     date: "",
     category: "",
-    accountID: "",
+    account_id: "",
     merchant_name: ""
   });
   
@@ -26,7 +26,7 @@ function TransactionsTable(props) {
       getTransactionsOnly();
   },[])
   //TODO: remove tmp
-  
+
   return (
     <Card>
       {
@@ -41,9 +41,15 @@ function TransactionsTable(props) {
         </Table.Header>
         <TableBody>
           {
-            transactions.map = (transactions) => {
-              <TableCell></TableCell>
-            }
+            !loading && transactions != null 
+            ? transactions.map((item) => 
+            <TableRow>
+              {<TableCell>{item.amount}</TableCell>}
+              {<TableCell>{item.account_id}</TableCell>}
+              {<TableCell>{item.date}</TableCell>}
+              </TableRow>
+            )
+            : "Loading . . ."
           }
         </TableBody>
         <Table.Row>
