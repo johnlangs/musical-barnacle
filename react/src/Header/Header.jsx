@@ -2,6 +2,7 @@ import React, { useState, useEffect} from "react";
 import { Button, Card, DropdownMenu, DropdownMenuTrigger } from "@radix-ui/themes";
 import "./HeaderStyle.css"
 import "../Context/Context";
+import SignIn from "../Sign In/SignIn";
 
 // contains the sum of all accounts, banks info is pulled from with info button, and selector
 function Header(props) {
@@ -64,6 +65,7 @@ function Header(props) {
           }
       </p>
       
+      <SignIn></SignIn>
       <Card id = "cardSelector">
           <DropdownMenu.Root>
             <DropdownMenuTrigger>

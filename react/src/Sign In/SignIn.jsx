@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { usePlaidLink } from "react-plaid-link";
-import "./App.scss";
 
 function SignIn(props) {
   const [token, setToken] = useState(null);
