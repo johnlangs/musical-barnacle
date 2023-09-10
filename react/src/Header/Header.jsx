@@ -10,21 +10,6 @@ function Header(props) {
   const [accounts, setAccounts] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // gets the total of all credits and debts
-  const getAccountSum = React.useCallback(async () => {
-    setLoading(true);
-
-    const response = await fetch("/api/totalBalance", {});
-    const data = await response.json();
-    console.log(data);
-
-    let balance = data.amount;
-    balance = "$ " + balance.toLocaleString();
-    setBalance(balance);
-
-    setLoading(false);
-  }, [setBalance]);
-
   // gets the string of banks, displayed under total sum
   const getBankNameString = React.useCallback(async () => {
     setLoading(true);
@@ -34,18 +19,19 @@ function Header(props) {
     console.log(data);
 
     setAccounts(data.accounts.map((item) => item.name).join(", "));
+    
+    let balance = data.balance;
+    balance = "$ " + balance.toLocaleString();
+    setBalance(balance);
 
     setLoading(false);
-  }, [setAccounts]);
+  }, [setAccounts, setBalance]);
 
   useEffect(() => {
-    if (balance == null) {
-      getAccountSum();
-    }
-    if (accounts == null) {
+    if (accounts == null && balance == null) {
       getBankNameString();
     }
-  }, [accounts, balance, getAccountSum, getBankNameString]); 
+  }, [accounts, balance, getBankNameString]); 
 
   // returns rendered Header
   return (
