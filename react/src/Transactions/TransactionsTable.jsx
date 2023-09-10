@@ -37,6 +37,7 @@ function TransactionsTable(props) {
         <Table.Header>
           <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Account</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell>Merchant</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
         </Table.Header>
         <TableBody>
@@ -44,8 +45,9 @@ function TransactionsTable(props) {
             !loading && transactions != null 
             ? transactions.map((item) => 
             <TableRow>
-              {<TableCell>{item.amount}</TableCell>}
-              {<TableCell>{item.account_id}</TableCell>}
+              {<TableCell>{"$" + item.amount}</TableCell>}
+              {<TableCell>{item.account}</TableCell>}
+              {<TableCell>{item.merchant_name}</TableCell>}
               {<TableCell>{item.date}</TableCell>}
               </TableRow>
             )
