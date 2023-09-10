@@ -16,7 +16,7 @@ const account_balances = JSON.parse(fs.readFileSync("./dummy-json/account_balanc
 const accounts_list = JSON.parse(fs.readFileSync("./dummy-json/accounts_list.json"));
 const category_spending = JSON.parse(fs.readFileSync("./dummy-json/category_spending.json"));
 const total_balance = JSON.parse(fs.readFileSync("./dummy-json/total_balance.json"));
-const transactions = JSON.parse(fs.readFileSync("./dummy-json/transactions.json"));
+const transactions_ex = JSON.parse(fs.readFileSync("./dummy-json/transactions.json"));
 
 const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
@@ -75,10 +75,13 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
   const balanceResponse = await PlaidClient.accountsBalanceGet({
     access_token: exchangeResponse.data.access_token,
   });
-  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, balanceResponse.data).catch(console.dir);
+  for (const account of balanceResponse.data.accounts) {
+    await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, account).catch(console.dir);
+  }
 
   const transactionResponse = await PlaidClient.transactionsSync({
     access_token: exchangeResponse.data.access_token,
+    options: {include_personal_finance_category: true}
   });
   await updateTransactionsDb(
     MongoDbClient, 
@@ -93,30 +96,84 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
 });
 
 app.get("/api/accountsList", async (req, res, next) => {
-  let result = []
+  let accounts = [];
+  let totalBalance = 0;
   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, -1);
 
   for (const doc of docs) {
-    result.push({name: doc.accounts[0].name, account_id: doc.accounts[0].account_id, balance: doc.accounts[0].balances.current})
+    accounts.push({name: doc.name, account_id: doc.account_id, balance: doc.balances.current});
+    totalBalance += Number(doc.balances.current);
   }
 
   res.json({
-    accounts: result,
+    balance: totalBalance,
+    accounts: accounts,
     generated_at: "test-te-st"
   })
-  //res.json(accounts_list);
 });
 
 app.get("/api/categorySpending", async (req, res, next) => {
-  res.json(category_spending);
-});
+  const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
 
-app.get("/api/totalBalance", async (req, res, next) => {
-  res.json(total_balance);
+  let categories = 
+  {
+    "BANK_FEES"                 :0,
+    "ENTERTAINMENT"             :0,
+    "FOOD_AND_DRINK"            :0,
+    "GENERAL_MERCHANDISE"       :0,
+    "GENERAL_SERVICES"          :0,
+    "GOVERNMENT_AND_NON_PROFIT" :0,
+    "HOME_IMPROVEMENT"          :0,
+    "INCOME"                    :0,
+    "LOAN_PAYMENTS"             :0,
+    "MEDICAL"                   :0,
+    "PERSONAL_CARE"             :0,
+    "RENT_AND_UTILITIES"        :0,
+    "TRANSFER_IN"               :0,
+    "TRANSFER_OUT"              :0,
+    "TRANSPORTATION"            :0,
+    "TRAVEL"                    :0
+  }
+
+  for (const doc of docs) {
+    categories[doc.personal_finance_category.primary] += doc.amount;
+  }
+
+  res.json(categories);
 });
 
 app.get("/api/transactions", async (req, res, next) => {
-  res.json(transactions);
+   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
+
+  let transactions = [];
+  for (const doc of docs) {
+    let account_name = "";
+    try
+    {
+      await MongoDbClient.connect();
+      let account = await MongoDbClient.db(process.env.DB_NAME).collection(process.env.ACCOUNTS_COLL).findOne({account_id: {$eq: doc.account_id}});
+      account_name = account.name;
+    }
+    finally
+    {
+      await MongoDbClient.close();
+    }
+
+    transactions.push({
+      date: doc.date,
+      amount: doc.amount,
+      account: account_name,
+      account_id: doc.account_id,
+      category: doc.personal_finance_category.primary,
+      merchant_name: doc.merchant_name
+    })
+  }
+
+  res.json({
+    number_of_transactions: transactions.length,
+    transactions: transactions,
+    generated_at: "test-te-st"
+  });
 });
 
 app.listen(process.env.PORT || 8080);
