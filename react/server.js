@@ -146,27 +146,30 @@ app.get("/api/transactions", async (req, res, next) => {
    const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
 
   let transactions = [];
-  for (const doc of docs) {
-    let account_name = "";
-    try
-    {
-      await MongoDbClient.connect();
-      let account = await MongoDbClient.db(process.env.DB_NAME).collection(process.env.ACCOUNTS_COLL).findOne({account_id: {$eq: doc.account_id}});
-      account_name = account.name;
-    }
-    finally
-    {
-      await MongoDbClient.close();
-    }
 
-    transactions.push({
-      date: doc.date,
-      amount: doc.amount,
-      account: account_name,
-      account_id: doc.account_id,
-      category: doc.personal_finance_category.primary,
-      merchant_name: doc.merchant_name
-    })
+  try
+  {
+    await MongoDbClient.connect();
+    for (const doc of docs) {
+      let account = await MongoDbClient.db(process.env.DB_NAME).collection(process.env.ACCOUNTS_COLL).findOne({account_id: {$eq: doc.account_id}});
+  
+      transactions.push({
+        date: doc.date,
+        amount: doc.amount,
+        account: account.name,
+        account_id: doc.account_id,
+        category: doc.personal_finance_category.primary,
+        merchant_name: doc.merchant_name
+      });
+    }
+  }
+  catch
+  {
+    console.dir();
+  }
+  finally
+  {
+    await MongoDbClient.close();
   }
 
   res.json({
