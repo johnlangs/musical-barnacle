@@ -6,7 +6,9 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
+const { pingDB, insertDoc, updateTransactionsDb, getDocuments } = require("./db_operations.js");
 const app = express();
 
 const fs = require('fs');
@@ -15,6 +17,16 @@ const accounts_list = JSON.parse(fs.readFileSync("./dummy-json/accounts_list.jso
 const category_spending = JSON.parse(fs.readFileSync("./dummy-json/category_spending.json"));
 const total_balance = JSON.parse(fs.readFileSync("./dummy-json/total_balance.json"));
 const transactions = JSON.parse(fs.readFileSync("./dummy-json/transactions.json"));
+
+const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+pingDB(MongoDbClient).catch(console.dir);
 
 app.use(
   // FOR DEMO PURPOSES ONLY
@@ -38,15 +50,15 @@ const config = new Configuration({
 });
 
 //Instantiate the Plaid client with the configuration
-const client = new PlaidApi(config);
+const PlaidClient = new PlaidApi(config);
 
 //Creates a Link token and return it
 app.get("/api/create_link_token", async (req, res, next) => {
-  const tokenResponse = await client.linkTokenCreate({
+  const tokenResponse = await PlaidClient.linkTokenCreate({
     user: { client_user_id: req.sessionID },
     client_name: "Plaid's Tiny Quickstart",
     language: "en",
-    products: ["auth"],
+    products: ["auth", "transactions"],
     country_codes: ["US"],
     redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
   });
@@ -55,22 +67,44 @@ app.get("/api/create_link_token", async (req, res, next) => {
 
 // Exchanges the public token from Plaid Link for an access token
 app.post("/api/exchange_public_token", async (req, res, next) => {
-  const exchangeResponse = await client.itemPublicTokenExchange({
+  const exchangeResponse = await PlaidClient.itemPublicTokenExchange({
     public_token: req.body.public_token,
   });
+  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.TOKENS_COLL, exchangeResponse.data).catch(console.dir);
 
-  // FOR DEMO PURPOSES ONLY
-  // Store access_token in DB instead of session storage
-  req.session.access_token = exchangeResponse.data.access_token;
+  const balanceResponse = await PlaidClient.accountsBalanceGet({
+    access_token: exchangeResponse.data.access_token,
+  });
+  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, balanceResponse.data).catch(console.dir);
+
+  const transactionResponse = await PlaidClient.transactionsSync({
+    access_token: exchangeResponse.data.access_token,
+  });
+  await updateTransactionsDb(
+    MongoDbClient, 
+    process.env.DB_NAME, 
+    process.env.TRANSACTIONS_COLL, 
+    transactionResponse.data.added,
+    transactionResponse.data.modified,
+    transactionResponse.data.removed
+    ).catch(console.dir);
+
   res.json(true);
 });
 
-app.get("/api/accountBalances", (req, res, next) => {
-  res.json(account_balances);
-})
-
 app.get("/api/accountsList", async (req, res, next) => {
-  res.json(accounts_list);
+  let result = []
+  const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, -1);
+
+  for (const doc of docs) {
+    result.push({name: doc.accounts[0].name, account_id: doc.accounts[0].account_id, balance: doc.accounts[0].balances.current})
+  }
+
+  res.json({
+    accounts: result,
+    generated_at: "test-te-st"
+  })
+  //res.json(accounts_list);
 });
 
 app.get("/api/categorySpending", async (req, res, next) => {
