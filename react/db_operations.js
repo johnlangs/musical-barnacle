@@ -65,6 +65,7 @@ async function getDocuments(client, database, collection, n, oldest_first=false)
       docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).toArray();
     else
       docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
+
   }
   finally
   {
@@ -160,5 +161,6 @@ async function removeTransactions(coll, removed)
     console.log(`Failed to remove ${removed.length - result.insertedCount} transactions from ${coll.namespace}`);
   }
 }
+
 
 module.exports = {pingDB, insertDoc, updateTransactionsDb, getDocuments};
