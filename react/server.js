@@ -6,10 +6,17 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const { MongoClient, ServerApiVersion } = require("mongodb")
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const { pingDB, insertDoc, updateTransactionsDb, getDocuments } = require("./db_operations.js");
 const app = express();
+
+const fs = require('fs');
+const account_balances = JSON.parse(fs.readFileSync("./dummy-json/account_balances.json"));
+const accounts_list = JSON.parse(fs.readFileSync("./dummy-json/accounts_list.json"));
+const category_spending = JSON.parse(fs.readFileSync("./dummy-json/category_spending.json"));
+const total_balance = JSON.parse(fs.readFileSync("./dummy-json/total_balance.json"));
+const transactions_ex = JSON.parse(fs.readFileSync("./dummy-json/transactions.json"));
 
 const MongoDbClient = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
@@ -24,7 +31,7 @@ pingDB(MongoDbClient).catch(console.dir);
 app.use(
   // FOR DEMO PURPOSES ONLY
   // Use an actual secret key in production
-  session({ secret: process.env.SESSION_SECRET, saveUninitialized: true, resave: true })
+  session({ secret: "bosco", saveUninitialized: true, resave: true })
 );
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -51,106 +58,125 @@ app.get("/api/create_link_token", async (req, res, next) => {
     user: { client_user_id: req.sessionID },
     client_name: "Plaid's Tiny Quickstart",
     language: "en",
-    products: ["auth", process.env.TRANSACTION_COLL],
+    products: ["auth", "transactions"],
     country_codes: ["US"],
     redirect_uri: process.env.PLAID_SANDBOX_REDIRECT_URI,
-    webhook: "www.example.com",
   });
   res.json(tokenResponse.data);
 });
 
 // Exchanges the public token from Plaid Link for an access token
-// Store balance and transaction data for that access token
 app.post("/api/exchange_public_token", async (req, res, next) => {
   const exchangeResponse = await PlaidClient.itemPublicTokenExchange({
     public_token: req.body.public_token,
   });
-  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.TOKEN_COLL, exchangeResponse.data).catch(console.dir);
+  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.TOKENS_COLL, exchangeResponse.data).catch(console.dir);
 
   const balanceResponse = await PlaidClient.accountsBalanceGet({
     access_token: exchangeResponse.data.access_token,
   });
-  await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, balanceResponse.data).catch(console.dir);
+  for (const account of balanceResponse.data.accounts) {
+    await insertDoc(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, account).catch(console.dir);
+  }
 
   const transactionResponse = await PlaidClient.transactionsSync({
     access_token: exchangeResponse.data.access_token,
+    options: {include_personal_finance_category: true}
   });
   await updateTransactionsDb(
     MongoDbClient, 
     process.env.DB_NAME, 
-    process.env.TRANSACTION_COLL, 
+    process.env.TRANSACTIONS_COLL, 
     transactionResponse.data.added,
     transactionResponse.data.modified,
     transactionResponse.data.removed
     ).catch(console.dir);
 
   res.json(true);
-})
+});
 
-// Get balance records up to an n amount, newest->oldest
-app.get("/api/balance/:n", async (req, res, next) => {
-  const result = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, Number(req.params.n)).catch(console.dir);
-
-  res.json({
-    n: req.params.n,
-    data: result,
-  });
-})
-
-// Get transaction records up to an n amount, newest->oldest
-app.get("/api/transactions/:n", async (req, res, next) => {
-  const result = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTION_COLL, Number(req.params.n)).catch(console.dir);
-
-  res.json({
-    n: req.params.n,
-    data: result,
-  });
-}) 
-
-app.get("/api/balanceOverview", async (req, res, next) => {
-  let totalBalance = 0;
+app.get("/api/accountsList", async (req, res, next) => {
   let accounts = [];
+  let totalBalance = 0;
+  const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, -1);
 
-  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
-
-  for (const document of balanceDocuments) {
-    for (const account of document.accounts) {
-      totalBalance += Number(account.balances.current);
-      accounts.push([account.name, account.balances.current]);
-    }
+  for (const doc of docs) {
+    accounts.push({name: doc.name, account_id: doc.account_id, balance: doc.balances.current});
+    totalBalance += Number(doc.balances.current);
   }
 
   res.json({
-    totalBalance: totalBalance,
+    balance: totalBalance,
     accounts: accounts,
+    generated_at: "test-te-st"
   })
-})
+});
 
-app.get("/api/totalBalance", async (req, res, next) => {
-  let totalBalance = 0;
-  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
+app.get("/api/categorySpending", async (req, res, next) => {
+  const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
 
-  for (const balance of balanceDocuments)
-    totalBalance += balance.balance;
+  let categories = 
+  {
+    "BANK_FEES"                 :0,
+    "ENTERTAINMENT"             :0,
+    "FOOD_AND_DRINK"            :0,
+    "GENERAL_MERCHANDISE"       :0,
+    "GENERAL_SERVICES"          :0,
+    "GOVERNMENT_AND_NON_PROFIT" :0,
+    "HOME_IMPROVEMENT"          :0,
+    "INCOME"                    :0,
+    "LOAN_PAYMENTS"             :0,
+    "MEDICAL"                   :0,
+    "PERSONAL_CARE"             :0,
+    "RENT_AND_UTILITIES"        :0,
+    "TRANSFER_IN"               :0,
+    "TRANSFER_OUT"              :0,
+    "TRANSPORTATION"            :0,
+    "TRAVEL"                    :0
+  }
 
-  res.json({
-    total_balance: totalBalance,
-    genereated_at: ""
-  })
-})
+  for (const doc of docs) {
+    categories[doc.personal_finance_category.primary] += doc.amount;
+  }
 
-app.get("/api/accountBalances", async (req, res, next) => {
-  let balances = [];
-  const balanceDocuments = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.BALANCE_COLL, 100).catch(console.dir);
+  res.json(categories);
+});
+
+app.get("/api/transactions", async (req, res, next) => {
+   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
+
+  let transactions = [];
+
+  try
+  {
+    await MongoDbClient.connect();
+    for (const doc of docs) {
+      let account = await MongoDbClient.db(process.env.DB_NAME).collection(process.env.ACCOUNTS_COLL).findOne({account_id: {$eq: doc.account_id}});
   
-  for (const account of balanceDocuments)
-    balances.push([account.name, account.balance]);
+      transactions.push({
+        date: doc.date,
+        amount: doc.amount,
+        account: account.name,
+        account_id: doc.account_id,
+        category: doc.personal_finance_category.primary,
+        merchant_name: doc.merchant_name
+      });
+    }
+  }
+  catch
+  {
+    console.dir();
+  }
+  finally
+  {
+    await MongoDbClient.close();
+  }
 
   res.json({
-    number_of_balances: balances.length,
-    balances: balances,
-    generated_at: ""
-  })
-})
+    number_of_transactions: transactions.length,
+    transactions: transactions,
+    generated_at: "test-te-st"
+  });
+});
 
 app.listen(process.env.PORT || 8080);

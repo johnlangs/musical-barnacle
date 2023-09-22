@@ -1,22 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { usePlaidLink } from "react-plaid-link";
-import "./App.scss";
 
-function App(props) {
+function SignIn(props) {
   const [token, setToken] = useState(null);
-  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Fetch balance data
-  const getBalance = React.useCallback(async () => {
-    setLoading(true);
-
-    const response = await fetch("/api/account_balances", {});
-
-    const data = await response.json();
-    setData(data);
-    setLoading(false);
-  }, [setData, setLoading]);
 
   const onSuccess = useCallback(async (publicToken) => {
     setLoading(true);
@@ -27,8 +14,8 @@ function App(props) {
       },
       body: JSON.stringify({ public_token: publicToken }),
     });
-    await getBalance();
-  }, [getBalance]);
+    setLoading(false);
+  }, []);
 
   // Creates a Link token
   const createLinkToken = React.useCallback(async () => {
@@ -73,17 +60,8 @@ function App(props) {
         } disabled={!ready}>
         <strong>Link account</strong>
       </button>
-
-      {!loading &&
-        data != null &&
-        Object.entries(data).map((entry, i) => (
-          <pre key={i}>
-            <code>{JSON.stringify(entry[1], null, 2)}</code>
-          </pre>
-        )
-      )}
     </div>
   );
 }
 
-export default App;
+export default SignIn;

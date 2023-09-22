@@ -1,0 +1,42 @@
+{
+    "number_of_transactions": 5,
+    "transactions":
+    [
+        {
+            "amount": 250,
+            "date": "2023-08-20",
+            "category": "Electronics",
+            "account_id": "adsfasdfasdfasdfasdfasdfa",
+            "merchant_name": "Lenovo"
+        },
+        {
+            "amount": 50,
+            "date": "2023-08-20",
+            "category": "Taxi",
+            "account_id": "NoJxasdfasvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+            "merchant_name": "Uber"
+        },
+        {
+            "amount": 150,
+            "date": "2023-08-18",
+            "category": "Groceries",
+            "account_id": "jkasdfxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+            "merchant_name": "HEB"
+        },
+        {
+            "amount": 100,
+            "date": "2023-08-15",
+            "category": "Uilties",
+            "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+            "merchant_name": "ATMOS Energy"
+        },
+        {
+            "amount": 150,
+            "date": "2023-08-13",
+            "category": "Debt Payment",
+            "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+            "merchant_name": "Plaid Loan"
+        }
+    ],
+    "generated_at": "2023-08-21"
+}

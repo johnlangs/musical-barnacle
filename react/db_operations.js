@@ -61,21 +61,17 @@ async function getDocuments(client, database, collection, n, oldest_first=false)
     await client.connect();
     const coll = client.db(database).collection(collection);
 
-    docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
+    if (n === -1)
+      docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).toArray();
+    else
+      docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
+
   }
   finally
   {
     await client.close();
     return docs;
   }
-}
-
-/**
- * Update balance collection
- */
-async function updateBalanceDb(client, database, collection, balance, insert=true)
-{
-  
 }
 
 /**
@@ -165,5 +161,6 @@ async function removeTransactions(coll, removed)
     console.log(`Failed to remove ${removed.length - result.insertedCount} transactions from ${coll.namespace}`);
   }
 }
+
 
 module.exports = {pingDB, insertDoc, updateTransactionsDb, getDocuments};

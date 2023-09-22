@@ -1,0 +1,14 @@
+/* Style sheet for MyApp.jsx */
+
+/* padding should be applyed around all cards, 15px*/
+.global {
+  padding:15px;
+}
+
+.cardTitle {
+  font-size: 1.5em;
+  font-weight: 400;
+  margin: inherit;
+}
+
+

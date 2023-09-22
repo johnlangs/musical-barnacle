@@ -1,0 +1,30 @@
+{   "accounts" :
+    [
+      {
+          "name": "Chase Checking",
+          "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+          "balance": 2000
+      },
+      {
+          "name": "Chase Savings",
+          "account_id": "gaewvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+          "balance": 20000
+      },
+      {
+          "name": "Plaid CD",
+          "account_id": "kyurK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+          "balance": 3500
+      },
+      {
+          "name": "Plaid Loan",
+          "account_id": "NoJxvK3qrRszqWBmmwXDsXJKo3RaKpCydWRdv",
+          "balance":  -500
+      },
+      {
+          "name": "Another Account",
+          "account_id": "AnotherAccountId",
+          "balance": null
+      }
+  ],
+  "generated_at": "2023-01-21"
+}

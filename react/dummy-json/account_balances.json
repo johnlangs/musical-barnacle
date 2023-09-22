@@ -1,0 +1,11 @@
+{
+    "number_of_balances": 4,
+    "account_balances": 
+    [
+        ["Chase Checking", 2000],
+        ["Chase Saving", 20000],
+        ["Plaid CD", 3500],
+        ["Plaid Loan", -500]
+    ],
+    "generated_at": "2023-08-21"
+}
