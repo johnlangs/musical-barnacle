@@ -29,7 +29,7 @@ function SpendCategories(props) {
       {name: 'Travel',                  value: data.TRAVEL                    ,  hex: '#ff5722'},
     ]);
     setLoading(false);
-  }, []);
+  }, [spending, setSpending]);
 
   const getColorSwab = (hex) => {
     return(
@@ -43,7 +43,7 @@ function SpendCategories(props) {
     {
       getSpending();
     }
-  },[getSpending, setSpending, spending]);
+  },[]);
 
 
   const onMouseEnterHandleSegment = () => {

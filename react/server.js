@@ -163,7 +163,7 @@ app.get("/api/transactions", async (req, res, next) => {
       });
     }
   }
-  catch
+  catch (e)
   {
     console.dir();
   }

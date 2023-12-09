@@ -11,16 +11,9 @@ const { MongoClient, FindCursor } = require("mongodb");
  */
 async function pingDB(client, database) 
 {
-  try 
-  {
     await client.connect();
     await client.db(database).command({ ping: 1 });
     console.log(`Successful Ping at ${process.env.MONGODB_URI}`);
-  } 
-  finally 
-  {
-    await client.close();
-  }
 }
 
 /**
@@ -32,16 +25,9 @@ async function pingDB(client, database)
  */
 async function insertDoc(client, database, collection, doc) 
 {
-  try 
-  {
     await client.connect();
     const result = await client.db(database).collection(collection).insertOne(doc);
     console.log(`A document was inserted with the _id: ${result.insertedId}`);
-  } 
-  finally 
-  {
-    await client.close();
-  }
 }
 
 /**
@@ -56,22 +42,14 @@ async function insertDoc(client, database, collection, doc)
 async function getDocuments(client, database, collection, n, oldest_first=false)
 {
   let docs = [];
-  try
-  {
     await client.connect();
-    const coll = client.db(database).collection(collection);
 
     if (n === -1)
-      docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).toArray();
+      docs = await client.db(database).collection(collection).find().sort({ date: oldest_first ? 1 : -1 }).toArray();
     else
-      docs = await coll.find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
+      docs = await client.db(database).collection(collection).find().sort({ date: oldest_first ? 1 : -1 }).limit(n).toArray();
 
-  }
-  finally
-  {
-    await client.close();
     return docs;
-  }
 }
 
 /**
@@ -85,8 +63,7 @@ async function getDocuments(client, database, collection, n, oldest_first=false)
  */
 async function updateTransactionsDb(client, database, collection, added, modified, removed)
 {
-  try
-  {
+
     await client.connect();
     const coll = client.db(database).collection(collection);    
 
@@ -101,11 +78,6 @@ async function updateTransactionsDb(client, database, collection, added, modifie
     // Delete transaction Docs that have marked as so by the sync
     if (removed.length > 0)
       await removeTransactions(coll, removed).catch(console.dir);
-  }
-  finally
-  {
-    client.close();
-  }
 }
 
 /**

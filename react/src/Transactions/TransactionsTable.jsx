@@ -5,33 +5,27 @@ import { Card,Table, TableBody, TableCell, TableRow, TableRowHeaderCell} from "@
 function TransactionsTable(props) {
 
   const[loading, setLoading] = useState(true);
-  const[transactions, setTransactions] = useState({
-    amount: 0,
-    date: "",
-    category: "",
-    account_id: "",
-    merchant_name: ""
-  });
+  const[transactions, setTransactions] = useState(null);
   
   // sets transactions to transactions state, ignoring other 
   const getTransactionsOnly = React.useCallback(async () => {
     setLoading(true)
     const response = await fetch("/api/transactions", {});
     const data = await response.json();
+    console.log(data);
     setTransactions(data.transactions);
     setLoading(false);
-  }, []);
+  }, [transactions, setTransactions]);
 
   useEffect(() => {
-      getTransactionsOnly();
-  },[])
+      if (transactions == null) {
+        getTransactionsOnly();
+      }
+  },[getTransactionsOnly])
   //TODO: remove tmp
 
   return (
     <Card style={{marginTop:"15px"}}>
-      {
-        console.log(transactions)
-      }
       <p class="Card">Transactions</p>
       <Table.Root>
         <Table.Header>
