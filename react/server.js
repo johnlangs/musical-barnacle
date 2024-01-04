@@ -9,7 +9,11 @@ const session = require("express-session");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const { pingDB, insertDoc, updateTransactionsDb, getDocuments } = require("./db_operations.js");
+const NodeCache = require('node-cache')
 const app = express();
+
+// cache for one day
+const cache = new NodeCache({ stdTTL: 60 * 60 * 24 })
 
 const fs = require('fs');
 const account_balances = JSON.parse(fs.readFileSync("./dummy-json/account_balances.json"));
@@ -96,6 +100,12 @@ app.post("/api/exchange_public_token", async (req, res, next) => {
 });
 
 app.get("/api/accountsList", async (req, res, next) => {
+  const cachedData = cache.get('accountsList');
+
+  if (cachedData) {
+    return res.json(cachedData)
+  }
+
   let accounts = [];
   let totalBalance = 0;
   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.ACCOUNTS_COLL, -1);
@@ -105,6 +115,12 @@ app.get("/api/accountsList", async (req, res, next) => {
     totalBalance += Number(doc.balances.current);
   }
 
+  cache.set('accountsList', {
+    balance: totalBalance,
+    accounts: accounts,
+    generated_at: "test-te-st"
+  })
+
   res.json({
     balance: totalBalance,
     accounts: accounts,
@@ -113,6 +129,12 @@ app.get("/api/accountsList", async (req, res, next) => {
 });
 
 app.get("/api/categorySpending", async (req, res, next) => {
+  const cachedData = cache.get('categorySpending')
+
+  if (cachedData) {
+    return res.json(cachedData)
+  }
+
   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
 
   let categories = 
@@ -139,11 +161,19 @@ app.get("/api/categorySpending", async (req, res, next) => {
     categories[doc.personal_finance_category.primary] += doc.amount;
   }
 
+  cache.set('categorySpending', categories)
+
   res.json(categories);
 });
 
 app.get("/api/transactions", async (req, res, next) => {
-   const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
+  const cachedData = cache.get('transactions')
+
+  if (cachedData) {
+    return res.json(cachedData)
+  }
+
+  const docs = await getDocuments(MongoDbClient, process.env.DB_NAME, process.env.TRANSACTIONS_COLL, -1);
 
   let transactions = [];
 
@@ -171,6 +201,12 @@ app.get("/api/transactions", async (req, res, next) => {
   {
     await MongoDbClient.close();
   }
+
+  cache.set('transactions', {
+    number_of_transactions: transactions.length,
+    transactions: transactions,
+    generated_at: "test-te-st"
+  })
 
   res.json({
     number_of_transactions: transactions.length,
